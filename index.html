@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>方量表</title>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js">
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f0f2f5;
+            padding: 12px;
+            padding-bottom: 100px;
+            color: #1a2332;
+        }
+
+        .app-header {
+            background: #4a6cf7;
+            color: #fff;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            box-shadow: 0 4px 16px rgba(74, 108, 247, 0.3);
+        }
+        .app-header .title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .app-header .badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .month-summary {
+            background: linear-gradient(135deg, #4a6cf7 0%, #7c9cff 100%);
+            color: #fff;
+            border-radius: 16px;
+            padding: 18px 22px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 4px 16px rgba(74, 108, 247, 0.25);
+        }
+        .month-summary .left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .month-summary .left .label {
+            font-size: 14px;
+            opacity: 0.85;
+            font-weight: 500;
+        }
+        .month-summary .left .month-select {
+            padding: 8px 14px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            cursor: pointer;
+            appearance: auto;
+            -webkit-appearance: auto;
+            backdrop-filter: blur(4px);
+        }
+        .month-summary .left .month-select option {
+            color: #1a2332;
+            background: #fff;
+        }
+        .month-summary .right {
+            text-align: right;
+        }
+        .month-summary .right .total {
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .month-summary .right .unit {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-left: 4px;
+            font-weight: 500;
+        }
+        .month-summary .right .sub {
+            font-size: 12px;
+            opacity: 0.75;
+            margin-top: 2px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn-primary {
+            background: #4a6cf7;
+            color: #fff;
+        }
+        .btn-success {
+            background: #0ecb81;
+            color: #fff;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+        .btn-outline {
+            background: transparent;
+            color: #4a6cf7;
+            border: 2px solid #4a6cf7;
+        }
+        .btn-outline-danger {
+            background: transparent;
+            color: #ef4444;
+            border: 2px solid #ef4444;
+        }
+        .btn-sm {
+            padding: 5px 13px;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+        .btn-create {
+            padding: 14px;
+            font-size: 17px;
+            border-radius: 14px;
+            background: #4a6cf7;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(74, 108, 247, 0.3);
+        }
+        .btn-create:active {
+            transform: scale(0.97);
+            box-shadow: 0 2px 8px rgba(74, 108, 247, 0.2);
+        }
+
+        .add-record-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 12px;
+        }
+
+        /* ===== 汇总图片样式 ===== */
+        .summary-preview {
+            background: #ffffff;
+            padding: 20px 16px;
+            font-size: 13px;
+            font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+            min-width: 320px;
+        }
+        .summary-preview .excel-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a2332;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #1a2332;
+            margin-bottom: 10px;
+            letter-spacing: 6px;
+        }
+        .summary-preview .excel-date {
+            text-align: right;
+            font-size: 12px;
+            color: #8895aa;
+            margin-bottom: 10px;
+        }
+        .summary-preview .excel-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .summary-preview .excel-table th {
+            background: #f0f4ff;
+            border: 1px solid #d0d7e2;
+            padding: 5px 3px;
+            text-align: center;
+            font-weight: 600;
+            color: #1a2332;
+            white-space: nowrap;
+        }
+        .summary-preview .excel-table td {
+            border: 1px solid #d0d7e2;
+            padding: 4px 3px;
+            text-align: center;
+            color: #1a2332;
+            white-space: nowrap;
+        }
+        .summary-preview .excel-table .total-row td {
+            background: #fafbfc;
+            font-weight: 700;
+            border-top: 2px solid #1a2332;
+        }
+        .summary-preview .personnel-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 2px solid #1a2332;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1a2332;
+            gap: 8px 24px;
+        }
+        .summary-preview .personnel-info .label {
+            color: #8895aa;
+            font-weight: 400;
+        }
+        .summary-preview .excel-footer {
+            text-align: center;
+            color: #b0bec5;
+            font-size: 11px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f2f5;
+        }
+
+        /* ===== 表格卡片 ===== */
+        .sheet-card {
+            background: #ffffff;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+            overflow: hidden;
+            border: 1px solid #edf0f5;
+        }
+        .sheet-card .sheet-header {
+            background: #f8faff;
+            padding: 14px 16px;
+            border-bottom: 2px solid #4a6cf7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .sheet-card .sheet-header .info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 16px;
+            font-size: 14px;
+        }
+        .sheet-card .sheet-header .info .item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .sheet-card .sheet-header .info .item .tag {
+            color: #8895aa;
+            font-weight: 400;
+        }
+        .sheet-card .sheet-header .info .item .val {
+            font-weight: 600;
+            color: #1a2332;
+        }
+        .sheet-card .sheet-header .toggle-icon {
+            font-size: 18px;
+            color: #8895aa;
+            transition: transform 0.3s;
+        }
+        .sheet-card .sheet-header .toggle-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+        .sheet-card .sheet-body {
+            padding: 14px 16px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .sheet-card .sheet-body.collapsed {
+            max-height: 0 !important;
+            padding: 0 16px;
+            opacity: 0;
+        }
+        .sheet-card .sheet-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .sheet-card .sheet-header .edit-sheet-btn {
+            background: none;
+            border: none;
+            color: #8895aa;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
+        .sheet-card .sheet-header .edit-sheet-btn:active {
+            background: rgba(0,0,0,0.05);
+        }
+
+        /* 记录列表 */
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f2f5;
+            font-size: 13px;
+        }
+        .record-item:last-child {
+            border-bottom: none;
+        }
+        .record-item .info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            flex: 1;
+            min-width: 0;
+        }
+        .record-item .info .main {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .record-item .info .sub {
+            color: #8895aa;
+            font-size: 11px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 10px;
+        }
+        .record-item .right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+        .record-item .right .vol {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .record-item .right .fee {
+            font-size: 12px;
+            color: #8895aa;
+            font-weight: 400;
+        }
+        .record-item .right .action-btn {
+            background: none;
+            border: none;
+            font-size: 15px;
+            padding: 0 3px;
+            cursor: pointer;
+            color: #8895aa;
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
+        .record-item .right .action-btn:active {
+            background: #f0f2f5;
+        }
+        .record-item .right .edit-btn {
+            color: #4a6cf7;
+        }
+        .record-item .right .del-btn {
+            color: #ef4444;
+        }
+        .empty-tip {
+            text-align: center;
+            color: #b0bec5;
+            padding: 16px 0;
+            font-size: 13px;
+        }
+
+        /* 添加记录表单 */
+        .add-record-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 8px;
+            align-items: end;
+            margin-bottom: 12px;
+        }
+        .add-record-form .field label {
+            font-size: 12px;
+            color: #8895aa;
+            display: block;
+            margin-bottom: 3px;
+            font-weight: 500;
+        }
+        .add-record-form .field input,
+        .add-record-form .field select {
+            padding: 7px 10px;
+            font-size: 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            width: 100%;
+            background: #fafbfc;
+            transition: border-color 0.2s;
+        }
+        .add-record-form .field input:focus,
+        .add-record-form .field select:focus {
+            outline: none;
+            border-color: #4a6cf7;
+            background: #fff;
+        }
+        .add-record-form .field .required {
+            color: #ef4444;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.78);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(4px);
+            white-space: nowrap;
+            font-weight: 500;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* ===== 模态框 ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-box {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 24px 22px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.95);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.active .modal-box {
+            transform: scale(1);
+        }
+        .modal-box .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a2332;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .modal-box .form-group {
+            margin-bottom: 14px;
+        }
+        .modal-box .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4a5a6e;
+            margin-bottom: 4px;
+        }
+        .modal-box .form-group label .required {
+            color: #ef4444;
+        }
+        .modal-box .form-group label .optional {
+            color: #b0bec5;
+            font-weight: 400;
+            font-size: 12px;
+        }
+        .modal-box .form-group input,
+        .modal-box .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 15px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            background: #fafbfc;
+            transition: border-color 0.2s;
+            color: #1a2332;
+        }
+        .modal-box .form-group input:focus,
+        .modal-box .form-group select:focus {
+            outline: none;
+            border-color: #4a6cf7;
+            background: #fff;
+        }
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .modal-box .modal-actions .btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 12px;
+        }
+
+        .modal-box .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 12px;
+        }
+        .modal-box .form-grid-2 .full {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 500px) {
+            .add-record-form {
+                grid-template-columns: 1fr 1fr;
+            }
+            .sheet-card .sheet-header .info {
+                font-size: 13px;
+                gap: 4px 10px;
+            }
+            .summary-preview .excel-table {
+                font-size: 10px;
+            }
+            .summary-preview .excel-table th,
+            .summary-preview .excel-table td {
+                padding: 3px 2px;
+            }
+            .summary-preview .personnel-info {
+                font-size: 12px;
+                gap: 4px 14px;
+                flex-wrap: wrap;
+            }
+            .app-header .title {
+                font-size: 17px;
+            }
+            .modal-box {
+                padding: 20px 16px;
+            }
+            .modal-box .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .month-summary {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+                padding: 16px 18px;
+            }
+            .month-summary .right {
+                text-align: center;
+            }
+            .month-summary .left {
+                justify-content: center;
+            }
+            .month-summary .right .total {
+                font-size: 24px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d0d7e2;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- ===== 标题卡片 ===== -->
+    <div class="app-header">
+        <span class="title">📋 方量表</span>
+        <span class="badge" id="sheetCount">共 0 张表</span>
+    </div>
+
+    <!-- ===== 月度汇总卡片 ===== -->
+    <div class="month-summary" id="monthSummary">
+        <div class="left">
+            <span class="label">📊 月度汇总</span>
+            <input type="month" class="month-select" id="monthSelector" />
+        </div>
+        <div class="right">
+            <div>
+                <span class="total" id="monthTotal">0</span>
+                <span class="unit">方量</span>
+            </div>
+            <div class="sub" id="monthDetail">共 0 张表，0 条记录</div>
+        </div>
+    </div>
+
+    <!-- ===== 创建新表按钮 ===== -->
+    <div style="margin-bottom:14px;">
+        <button class="btn btn-block btn-create" id="btnOpenModal">
+            ➕ 创建新表
+        </button>
+    </div>
+
+    <!-- ===== 所有表容器 ===== -->
+    <div id="sheetsContainer"></div>
+
+    <!-- ===== 底部浮动栏 ===== -->
+    <div id="floatingAdd" style="position:fixed;bottom:0;left:0;right:0;background:#fff;padding:12px 16px;box-shadow:0 -2px 12px rgba(0,0,0,0.08);display:flex;gap:10px;z-index:100;border-top:1px solid #e8ecf1;display:none;">
+        <select id="floatingSheetSelect" style="flex:1;padding:10px 12px;font-size:15px;border:1.5px solid #e2e8f0;border-radius:10px;background:#fafbfc;">
+            <option value="">选择表</option>
+        </select>
+        <button class="btn btn-primary" id="floatingAddBtn" style="flex-shrink:0;border-radius:10px;">➕ 添加记录</button>
+    </div>
+
+    <!-- ===== 新建表弹窗 ===== -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal-box">
+            <div class="modal-title">📝 新建表</div>
+            <div class="form-group">
+                <label>日期 <span class="required">*</span></label>
+                <input type="date" id="modalDate" />
+            </div>
+            <div class="form-group">
+                <label>仓库 <span class="optional">（选填）</span></label>
+                <input type="text" id="modalWarehouse" placeholder="请输入仓库名称（选填）" />
+            </div>
+            <div class="form-group">
+                <label>发货员</label>
+                <input type="text" id="modalClerk" placeholder="请输入姓名" />
+            </div>
+            <div class="form-group">
+                <label>抱车</label>
+                <input type="text" id="modalBaoche" placeholder="请输入姓名" />
+            </div>
+            <div class="form-group">
+                <label>装卸</label>
+                <input type="text" id="modalZhuangxie" placeholder="请输入姓名" />
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="modalCancel">取消</button>
+                <button class="btn btn-primary" id="modalConfirm">✅ 创建</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 编辑表弹窗 ===== -->
+    <div class="modal-overlay" id="editSheetModal">
+        <div class="modal-box">
+            <div class="modal-title">✏️ 编辑表信息</div>
+            <input type="hidden" id="editSheetId" />
+            <div class="form-group">
+                <label>日期 <span class="required">*</span></label>
+                <input type="date" id="editSheetDate" />
+            </div>
+            <div class="form-group">
+                <label>仓库 <span class="optional">（选填）</span></label>
+                <input type="text" id="editSheetWarehouse" placeholder="请输入仓库名称（选填）" />
+            </div>
+            <div class="form-group">
+                <label>发货员</label>
+                <input type="text" id="editSheetClerk" placeholder="请输入姓名" />
+            </div>
+            <div class="form-group">
+                <label>抱车</label>
+                <input type="text" id="editSheetBaoche" placeholder="请输入姓名" />
+            </div>
+            <div class="form-group">
+                <label>装卸</label>
+                <input type="text" id="editSheetZhuangxie" placeholder="请输入姓名" />
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="editSheetCancel">取消</button>
+                <button class="btn btn-primary" id="editSheetConfirm">💾 保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 编辑记录弹窗 ===== -->
+    <div class="modal-overlay" id="editRecordModal">
+        <div class="modal-box">
+            <div class="modal-title">✏️ 编辑记录</div>
+            <input type="hidden" id="editRecordSheetId" />
+            <input type="hidden" id="editRecordId" />
+            <div class="form-grid-2">
+                <div class="form-group full">
+                    <label>车牌号/车次号 <span class="required">*</span></label>
+                    <input type="text" id="editRecordCar" placeholder="例如：渝A12345" />
+                </div>
+                <div class="form-group">
+                    <label>类型 <span class="required">*</span></label>
+                    <select id="editRecordType">
+                        <option value="发货">发货</option>
+                        <option value="卸货">卸货</option>
+                        <option value="翻货">翻货</option>
+                        <option value="移库">移库</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>方量 <span class="required">*</span></label>
+                    <input type="number" id="editRecordVolume" placeholder="0.0" step="0.1" min="0" />
+                </div>
+                <div class="form-group">
+                    <label>连绳费（元）</label>
+                    <input type="number" id="editRecordRope" placeholder="0" step="0.5" min="0" value="0" />
+                </div>
+                <div class="form-group">
+                    <label>翻货（元）</label>
+                    <input type="number" id="editRecordTurn" placeholder="0" step="0.5" min="0" value="0" />
+                </div>
+                <div class="form-group full">
+                    <label>解/封蓬（元）</label>
+                    <input type="number" id="editRecordCover" placeholder="0" step="0.5" min="0" value="0" />
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="editRecordCancel">取消</button>
+                <button class="btn btn-primary" id="editRecordConfirm">💾 保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  核心逻辑
+        // ============================================================
+
+        const STORAGE_KEY = 'fangliang_sheets';
+
+        function getToday() {
+            const d = new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        function getCurrentMonth() {
+            const d = new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            return `${y}-${m}`;
+        }
+
+        function getNow() {
+            const d = new Date();
+            return getToday() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        }
+
+        function genId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+        }
+
+        // ===== 数据操作 =====
+        function getSheets() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch { return []; }
+        }
+
+        function saveSheets(sheets) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sheets));
+        }
+
+        // ===== Toast =====
+        let toastTimer = null;
+
+        function showToast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                el.classList.remove('show');
+            }, 2000);
+        }
+
+        // ===== 弹窗控制 =====
+        function openCreateModal() {
+            document.getElementById('modalDate').value = getToday();
+            document.getElementById('modalWarehouse').value = '';
+            document.getElementById('modalClerk').value = '';
+            document.getElementById('modalBaoche').value = '';
+            document.getElementById('modalZhuangxie').value = '';
+            document.getElementById('createModal').classList.add('active');
+            setTimeout(() => document.getElementById('modalDate').focus(), 200);
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').classList.remove('active');
+        }
+
+        // ===== 编辑表弹窗 =====
+        function openEditSheetModal(sheetId) {
+            const sheets = getSheets();
+            const sheet = sheets.find(s => s.id === sheetId);
+            if (!sheet) { showToast('⚠️ 表不存在'); return; }
+
+            document.getElementById('editSheetId').value = sheetId;
+            document.getElementById('editSheetDate').value = sheet.date || '';
+            document.getElementById('editSheetWarehouse').value = sheet.warehouse || '';
+            document.getElementById('editSheetClerk').value = sheet.clerk || '';
+            document.getElementById('editSheetBaoche').value = sheet.baoche || '';
+            document.getElementById('editSheetZhuangxie').value = sheet.zhuangxie || '';
+
+            document.getElementById('editSheetModal').classList.add('active');
+            setTimeout(() => document.getElementById('editSheetDate').focus(), 200);
+        }
+
+        function closeEditSheetModal() {
+            document.getElementById('editSheetModal').classList.remove('active');
+        }
+
+        // ===== 编辑记录弹窗 =====
+        function openEditRecordModal(sheetId, recordId) {
+            const sheets = getSheets();
+            const sheet = sheets.find(s => s.id === sheetId);
+            if (!sheet) return;
+            const record = sheet.records.find(r => r.id === recordId);
+            if (!record) return;
+
+            document.getElementById('editRecordSheetId').value = sheetId;
+            document.getElementById('editRecordId').value = recordId;
+            document.getElementById('editRecordCar').value = record.car || '';
+            document.getElementById('editRecordType').value = record.type || '发货';
+            document.getElementById('editRecordVolume').value = record.volume || '';
+            document.getElementById('editRecordRope').value = record.rope || 0;
+            document.getElementById('editRecordTurn').value = record.turn || 0;
+            document.getElementById('editRecordCover').value = record.cover || 0;
+
+            document.getElementById('editRecordModal').classList.add('active');
+            setTimeout(() => document.getElementById('editRecordCar').focus(), 200);
+        }
+
+        function closeEditRecordModal() {
+            document.getElementById('editRecordModal').classList.remove('active');
+        }
+
+        // ===== 创建新表 =====
+        function createSheetFromModal() {
+            const date = document.getElementById('modalDate').value;
+            const warehouse = document.getElementById('modalWarehouse').value.trim();
+            const clerk = document.getElementById('modalClerk').value.trim();
+            const baoche = document.getElementById('modalBaoche').value.trim();
+            const zhuangxie = document.getElementById('modalZhuangxie').value.trim();
+
+            if (!date) {
+                showToast('⚠️ 请选择日期');
+                return;
+            }
+
+            const sheet = {
+                id: genId(),
+                date: date,
+                warehouse: warehouse,
+                clerk: clerk,
+                baoche: baoche,
+                zhuangxie: zhuangxie,
+                records: [],
+                createdAt: getNow(),
+                collapsed: true
+            };
+
+            const sheets = getSheets();
+            sheets.push(sheet);
+            saveSheets(sheets);
+            renderAll();
+            closeCreateModal();
+            showToast('✅ 新表创建成功！');
+        }
+
+        // ===== 保存编辑表 =====
+        function saveEditSheet() {
+            const sheetId = document.getElementById('editSheetId').value;
+            const date = document.getElementById('editSheetDate').value;
+            const warehouse = document.getElementById('editSheetWarehouse').value.trim();
+            const clerk = document.getElementById('editSheetClerk').value.trim();
+            const baoche = document.getElementById('editSheetBaoche').value.trim();
+            const zhuangxie = document.getElementById('editSheetZhuangxie').value.trim();
+
+            if (!date) {
+                showToast('⚠️ 请选择日期');
+                return;
+            }
+
+            const sheets = getSheets();
+            const sheet = sheets.find(s => s.id === sheetId);
+            if (!sheet) {
+                showToast('⚠️ 表不存在');
+                return;
+            }
+
+            sheet.date = date;
+            sheet.warehouse = warehouse;
+            sheet.clerk = clerk;
+            sheet.baoche = baoche;
+            sheet.zhuangxie = zhuangxie;
+
+            saveSheets(sheets);
+            renderAll();
+            closeEditSheetModal();
+            showToast('✅ 表信息已更新');
+        }
+
+        // ===== 切换折叠 =====
+        function toggleSheet(sheetId) {
+            const sheets = getSheets();
+            const sheet = sheets.find(s => s.id === sheetId);
+            if (!sheet) return;
+            sheet.collapsed = !sheet.collapsed;
+            saveSheets(sheets);
+            renderAll();
+        }
+
+        // ===== 删除表 =====
+        function deleteSheet(sheetId) {
+            if (!confirm('确定要删除这张表及其所有记录吗？')) return;
+            let sheets = getSheets();
+            sheets = sheets.filter(s => s.id !== sheetId);
+            saveSheets(sheets);
+            renderAll();
+            showToast('🗑️ 已删除');
+        }
+
+        // ===== 添加记录 =====
+        function addRecordToSheet(sheetId, data) {
+            const sheets = getSheets();
+            const sheet = sheets.find(s => s.id === sheetId);
+            if (!sheet) {
+                showToast('⚠️ 表不存在');
+                return false;
+            }
+
+            const record = {
+                id: genId(),
+                car: data.car,
+                type: data.type,
+                volume: data.volume,
+                rope: data.rope,
+                turn: data.turn,
+                cover: data.cover,
+                time: getNow()
+            };
+
+            sheet.records.push(record);
+            sheet.collapsed = false;
+            saveSheets(sheets);
+            renderAll();
+            return true;
+        }
+
+        // ===== 编辑记录 =====
+        function saveEditRecord() {
+            const sheetId = document.getElementById('editRecordSheetId').value;
+            const recordId = document.getElementById('editRecordId').value;
+            const car = document.getElementById('editRecordCar').value.trim();
+            const type = document.getElementById('editRecordType').value;
+            const volume = parseFloat(document.getElementById('editRecordVolume').value) || 0;
+            const rope = parseFloat(document.getElementById('editRecordRope').value) || 0;
+            const turn = parseFloat(document.getElementById('editRecordTurn').value) || 0;
+            const cover = parseFloat(document.getElementById('editRecordCover').value) || 0;
+
+            if (!car) { showToast('⚠️ 请输入车牌号'); return; }
+            if (volume <= 0) { showToast('⚠️ 请输入有效的方量（>0）'); return; }
+
+            const sheets = getSheets();
+            const sheet = sheets.find(s => s.id === sheetId);
+            if (!sheet) { showToast('⚠️ 表不存在'); return false; }
+            const record = sheet.records.find(r => r.id === recordId);
+            if (!record) { showToast('⚠️ 记录不存在'); return false; }
+
+            record.car = car;
+            record.type = type;
+            record.volume = volume;
+            record.rope = rope;
+            record.turn = turn;
+            record.cover = cover;
+
+            saveSheets(sheets);
+            renderAll();
+            closeEditRecordModal();
+            showToast('✅ 记录已更新');
+        }
+
+        // ===== 删除记录 =====
+        function deleteRecord(sheetId, recordId) {
+            if (!confirm('确定要删除这条记录吗？')) return;
+            const sheets = getSheets();
+            const sheet = sheets.find(s => s.id === sheetId);
+            if (!sheet) return;
+            sheet.records = sheet.records.filter(r => r.id !== recordId);
+            saveSheets(sheets);
+            renderAll();
+            showToast('🗑️ 已删除');
+        }
+
+        // ===== 获取月份筛选 =====
+        function getSelectedMonth() {
+            return document.getElementById('monthSelector').value || getCurrentMonth();
+        }
+
+        // ===== 计算月度汇总 =====
+        function calcMonthSummary(sheets, month) {
+            const monthSheets = sheets.filter(s => s.date && s.date.startsWith(month));
+            let totalVolume = 0;
+            let totalRecords = 0;
+            monthSheets.forEach(s => {
+                s.records.forEach(r => {
+                    totalVolume += r.volume || 0;
+                    totalRecords++;
+                });
+            });
+            return {
+                totalVolume: totalVolume,
+                totalRecords: totalRecords,
+                sheetCount: monthSheets.length,
+                sheets: monthSheets
+            };
+        }
+
+        // ===== 更新月度汇总显示 =====
+        function updateMonthSummary() {
+            const month = getSelectedMonth();
+            const sheets = getSheets();
+            const summary = calcMonthSummary(sheets, month);
+
+            document.getElementById('monthTotal').textContent = summary.totalVolume.toFixed(1);
+            document.getElementById('monthDetail').textContent =
+                `共 ${summary.sheetCount} 张表，${summary.totalRecords} 条记录`;
+
+            const selector = document.getElementById('monthSelector');
+            if (!selector.value) {
+                selector.value = month;
+            }
+        }
+
+        // ===== 渲染全部 =====
+        function renderAll() {
+            const sheets = getSheets();
+            const month = getSelectedMonth();
+            const summary = calcMonthSummary(sheets, month);
+            const filteredSheets = summary.sheets;
+
+            renderSheets(filteredSheets);
+            updateFloatingMenu(sheets);
+            document.getElementById('sheetCount').textContent = `共 ${sheets.length} 张表`;
+            updateMonthSummary();
+        }
+
+        // ===== 渲染所有表 =====
+        function renderSheets(sheets) {
+            const container = document.getElementById('sheetsContainer');
+
+            if (sheets.length === 0) {
+                const month = getSelectedMonth();
+                const [year, monthNum] = month.split('-');
+                container.innerHTML = `
+                    <div class="card" style="text-align:center;padding:40px 20px;color:#b0bec5;border-radius:14px;">
+                        <div style="font-size:48px;margin-bottom:12px;">📋</div>
+                        <div style="font-size:16px;font-weight:500;">${year}年${monthNum}月 暂无表</div>
+                        <div style="font-size:13px;margin-top:4px;">点击「创建新表」开始</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const sorted = [...sheets].sort((a, b) => b.date.localeCompare(a.date));
+
+            let html = '';
+            sorted.forEach(sheet => {
+                const recordCount = sheet.records.length;
+                const totalVolume = sheet.records.reduce((sum, r) => sum + r.volume, 0);
+                const totalFee = sheet.records.reduce((sum, r) => sum + r.rope + r.turn + r.cover, 0);
+                const isCollapsed = sheet.collapsed !== false;
+
+                html += `
+                    <div class="sheet-card" data-sheet-id="${sheet.id}">
+                        <div class="sheet-header" onclick="toggleSheet('${sheet.id}')">
+                            <div class="info">
+                                <span class="item"><span class="tag">📅</span><span class="val">${sheet.date}</span></span>
+                                ${sheet.warehouse ? `<span class="item"><span class="tag">🏚️</span><span class="val">${sheet.warehouse}</span></span>` : ''}
+                                ${sheet.clerk ? `<span class="item"><span class="tag">发货员</span><span class="val">${sheet.clerk}</span></span>` : ''}
+                                ${sheet.baoche ? `<span class="item"><span class="tag">抱车</span><span class="val">${sheet.baoche}</span></span>` : ''}
+                                ${sheet.zhuangxie ? `<span class="item"><span class="tag">装卸</span><span class="val">${sheet.zhuangxie}</span></span>` : ''}
+                                <span class="item"><span class="tag">📊</span><span class="val">${recordCount} 条</span></span>
+                                <span class="item"><span class="tag">方量</span><span class="val">${totalVolume.toFixed(1)}</span></span>
+                                <span class="item"><span class="tag">费用</span><span class="val">${totalFee.toFixed(1)}</span></span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <button class="edit-sheet-btn" onclick="event.stopPropagation();openEditSheetModal('${sheet.id}')" title="编辑表信息">✏️</button>
+                                <div class="sheet-actions" onclick="event.stopPropagation();">
+                                    <button class="btn btn-success btn-sm" onclick="exportSheetImage('${sheet.id}')">🖼️ 导出图</button>
+                                    <button class="btn btn-outline btn-sm" onclick="exportSheetCSV('${sheet.id}')">📄 CSV</button>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deleteSheet('${sheet.id}')">🗑️</button>
+                                </div>
+                                <span class="toggle-icon ${isCollapsed ? 'collapsed' : ''}">▼</span>
+                            </div>
+                        </div>
+
+                        <div class="sheet-body ${isCollapsed ? 'collapsed' : ''}">
+                            <div class="add-record-form">
+                                <div class="field">
+                                    <label>车牌号 <span class="required">*</span></label>
+                                    <input type="text" class="inputCar" placeholder="渝A12345" value="" />
+                                </div>
+                                <div class="field">
+                                    <label>类型 <span class="required">*</span></label>
+                                    <select class="inputType">
+                                        <option value="发货">发货</option>
+                                        <option value="卸货">卸货</option>
+                                        <option value="翻货">翻货</option>
+                                        <option value="移库">移库</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>方量 <span class="required">*</span></label>
+                                    <input type="number" class="inputVolume" placeholder="0.0" step="0.1" min="0" value="" />
+                                </div>
+                                <div class="field">
+                                    <label>连绳费</label>
+                                    <input type="number" class="inputRope" placeholder="0" step="0.5" min="0" value="" />
+                                </div>
+                                <div class="field">
+                                    <label>翻货</label>
+                                    <input type="number" class="inputTurn" placeholder="0" step="0.5" min="0" value="" />
+                                </div>
+                                <div class="field">
+                                    <label>解/封蓬</label>
+                                    <input type="number" class="inputCover" placeholder="0" step="0.5" min="0" value="" />
+                                </div>
+                            </div>
+                            <div class="add-record-row">
+                                <button class="btn btn-primary btn-sm btn-add-record" data-sheet-id="${sheet.id}">✅ 添加记录</button>
+                            </div>
+
+                            <div class="record-list">
+                                ${renderRecords(sheet.records, sheet.id)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            container.querySelectorAll('.btn-add-record').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const sheetId = this.dataset.sheetId;
+                    const card = document.querySelector(`.sheet-card[data-sheet-id="${sheetId}"]`);
+                    const car = card.querySelector('.inputCar').value.trim();
+                    const type = card.querySelector('.inputType').value;
+                    const volume = parseFloat(card.querySelector('.inputVolume').value) || 0;
+                    const rope = parseFloat(card.querySelector('.inputRope').value) || 0;
+                    const turn = parseFloat(card.querySelector('.inputTurn').value) || 0;
+                    const cover = parseFloat(card.querySelector('.inputCover').value) || 0;
+
+                    if (!car) { showToast('⚠️ 请输入车牌号'); return; }
+                    if (volume <= 0) { showToast('⚠️ 请输入有效的方量（>0）'); return; }
+
+                    const success = addRecordToSheet(sheetId, { car, type, volume, rope, turn, cover });
+                    if (success) {
+                        card.querySelector('.inputCar').value = '';
+                        card.querySelector('.inputVolume').value = '';
+                        card.querySelector('.inputRope').value = '';
+                        card.querySelector('.inputTurn').value = '';
+                        card.querySelector('.inputCover').value = '';
+                        card.querySelector('.inputType').value = '发货';
+                    }
+                });
+            });
+
+            container.querySelectorAll('.edit-record-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const sheetId = this.dataset.sheetId;
+                    const recordId = this.dataset.recordId;
+                    openEditRecordModal(sheetId, recordId);
+                });
+            });
+
+            container.querySelectorAll('.del-record-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const sheetId = this.dataset.sheetId;
+                    const recordId = this.dataset.recordId;
+                    deleteRecord(sheetId, recordId);
+                });
+            });
+        }
+
+        // ===== 渲染记录列表 =====
+        function renderRecords(records, sheetId) {
+            if (records.length === 0) {
+                return '<div class="empty-tip">暂无记录，请添加 📝</div>';
+            }
+            const list = [...records].reverse();
+            let html = '';
+            list.forEach(r => {
+                const fee = (r.rope + r.turn + r.cover).toFixed(1);
+                html += `
+                    <div class="record-item">
+                        <div class="info">
+                            <div class="main">车牌/车次号：${r.car} · ${r.type}</div>
+                            <div class="sub">方量 ${r.volume.toFixed(1)} | 连绳费 ${r.rope.toFixed(1)} | 翻货 ${r.turn.toFixed(1)} | 解/封蓬 ${r.cover.toFixed(1)}</div>
+                        </div>
+                        <div class="right">
+                            <span class="vol">${r.volume.toFixed(1)}</span>
+                            <span class="fee">${fee}元</span>
+                            <button class="action-btn edit-record-btn" data-sheet-id="${sheetId}" data-record-id="${r.id}" title="编辑">✏️</button>
+                            <button class="action-btn del-btn del-record-btn" data-sheet-id="${sheetId}" data-record-id="${r.id}" title="删除">✕</button>
+                        </div>
+                    </div>
+                `;
+            });
+            return html;
+        }
+
+        // ===== 更新浮动菜单 =====
+        function updateFloatingMenu(sheets) {
+            const select = document.getElementById('floatingSheetSelect');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">选择表</option>';
+            sheets.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                const label = `${s.date} ${s.warehouse ? '['+s.warehouse+']' : ''} ${s.clerk ? '| '+s.clerk : ''} (${s.records.length}条)`;
+                opt.textContent = label;
+                select.appendChild(opt);
+            });
+            if (currentVal && sheets.some(s => s.id === currentVal)) {
+                select.value = currentVal;
+            }
+            document.getElementById('floatingAdd').style.display = sheets.length > 0 ? 'flex' : 'none';
+        }
+
+        // ===== 浮动添加 =====
+        document.getElementById('floatingAddBtn').addEventListener('click', function() {
+            const sheetId = document.getElementById('floatingSheetSelect').value;
+            if (!sheetId) { showToast('⚠️ 请先选择一张表'); return; }
+            const card = document.querySelector(`.sheet-card[data-sheet-id="${sheetId}"]`);
+            if (card) {
+                const sheets = getSheets();
+                const sheet = sheets.find(s => s.id === sheetId);
+                if (sheet && sheet.collapsed) {
+                    sheet.collapsed = false;
+                    saveSheets(sheets);
+                    renderAll();
+                }
+                setTimeout(() => {
+                    const newCard = document.querySelector(`.sheet-card[data-sheet-id="${sheetId}"]`);
+                    if (newCard) {
+                        newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        const input = newCard.querySelector('.inputCar');
+                        if (input) setTimeout(() => input.focus(), 500);
+                    }
+                }, 100);
+            }
+        });
+
+        // ===== 构建汇总图片HTML =====
+        function buildSummaryHTML(sheet) {
+            const records = sheet.records || [];
+            const totalVolume = records.reduce((s, r) => s + r.volume, 0);
+            const totalRope = records.reduce((s, r) => s + r.rope, 0);
+            const totalTurn = records.reduce((s, r) => s + r.turn, 0);
+            const totalCover = records.reduce((s, r) => s + r.cover, 0);
+
+            let rows = '';
+            if (records.length === 0) {
+                rows = `<tr><td colspan="6" style="text-align:center;color:#b0bec5;padding:16px;">暂无数据</td></tr>`;
+            } else {
+                records.forEach((r, idx) => {
+                    const bg = idx % 2 === 0 ? '' : 'background:#fafbfc;';
+                    rows += `
+                        <tr style="${bg}">
+                            <td>${r.car}</td>
+                            <td>${r.type}</td>
+                            <td>${r.volume.toFixed(1)}</td>
+                            <td>${r.rope.toFixed(1)}</td>
+                            <td>${r.turn.toFixed(1)}</td>
+                            <td>${r.cover.toFixed(1)}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            let personHtml = '';
+            const persons = [];
+            if (sheet.warehouse) persons.push(`<span><span class="label">仓库：</span><span class="name">${sheet.warehouse}</span></span>`);
+            if (sheet.clerk) persons.push(`<span><span class="label">发货员：</span><span class="name">${sheet.clerk}</span></span>`);
+            if (sheet.baoche) persons.push(`<span><span class="label">抱车：</span><span class="name">${sheet.baoche}</span></span>`);
+            if (sheet.zhuangxie) persons.push(`<span><span class="label">装卸：</span><span class="name">${sheet.zhuangxie}</span></span>`);
+            if (persons.length > 0) {
+                personHtml = `<div class="personnel-info">${persons.join('')}</div>`;
+            }
+
+            return `
+                <div class="summary-preview">
+                    <div class="excel-title">方 量 表</div>
+                    <div class="excel-date">日期：${sheet.date}</div>
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
+                                <th>车牌号/车次号</th>
+                                <th>类型</th>
+                                <th>方量</th>
+                                <th>连绳费(元)</th>
+                                <th>翻货(元)</th>
+                                <th>解/封蓬(元)</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td colspan="2">合计：</td>
+                                <td>${totalVolume.toFixed(1)}</td>
+                                <td>${totalRope.toFixed(1)}</td>
+                                <td>${totalTurn.toFixed(1)}</td>
+                                <td>${totalCover.toFixed(1)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    ${personHtml}
+                    <div class="excel-footer">— 共 ${records.length} 条记录 —</div>
+                </div>
+            `;
+        }
+
+        // ===== 导出图片 =====
+        async function exportSheetImage(sheetId) {
+            const sheets = getSheets();
+            const sheet = sheets.find(s => s.id === sheetId);
+            if (!sheet) { showToast('⚠️ 表不存在'); return; }
+
+            const preview = buildSummaryHTML(sheet);
+
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'fixed';
+            wrapper.style.left = '-9999px';
+            wrapper.style.top = '0';
+            wrapper.style.background = '#ffffff';
+            wrapper.style.padding = '20px';
+            wrapper.style.zIndex = '9999';
+            wrapper.innerHTML = preview;
+            document.body.appendChild(wrapper);
+
+            try {
+                await new Promise(r => setTimeout(r, 300));
+                const canvas = await html2canvas(wrapper, {
+                    scale: 2.5,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    width: wrapper.scrollWidth,
+                    height: wrapper.scrollHeight,
+                    windowWidth: wrapper.scrollWidth,
+                    windowHeight: wrapper.scrollHeight
+                });
+
+                const link = document.createElement('a');
+                const fileName = `方量表_${sheet.date}${sheet.warehouse ? '_'+sheet.warehouse : ''}.png`;
+                link.download = fileName;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast('✅ 图片已导出！');
+            } catch (err) {
+                console.error(err);
+                showToast('❌ 导出失败，请重试');
+            } finally {
+                document.body.removeChild(wrapper);
+            }
+        }
+
+        // ===== 导出CSV =====
+        function exportSheetCSV(sheetId) {
+            const sheets = getSheets();
+            const sheet = sheets.find(s => s.id === sheetId);
+            if (!sheet) { showToast('⚠️ 表不存在'); return; }
+            if (sheet.records.length === 0) {
+                showToast('⚠️ 该表暂无数据');
+                return;
+            }
+
+            let csv = '\uFEFF';
+            csv += '车牌号/车次号,类型,方量,连绳费(元),翻货(元),解/封蓬(元)\n';
+            sheet.records.forEach(r => {
+                csv += `${r.car},${r.type},${r.volume},${r.rope},${r.turn},${r.cover}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const fileName = `方量表_${sheet.date}${sheet.warehouse ? '_'+sheet.warehouse : ''}.csv`;
+            link.download = fileName;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            URL.revokeObjectURL(link.href);
+            showToast('✅ CSV已导出');
+        }
+
+        // ===== 初始化 =====
+        function init() {
+            const monthSelector = document.getElementById('monthSelector');
+            monthSelector.value = getCurrentMonth();
+            monthSelector.addEventListener('change', function() {
+                renderAll();
+            });
+
+            // 新建表
+            document.getElementById('btnOpenModal').addEventListener('click', openCreateModal);
+            document.getElementById('modalCancel').addEventListener('click', closeCreateModal);
+            document.getElementById('modalConfirm').addEventListener('click', createSheetFromModal);
+            document.getElementById('createModal').addEventListener('click', function(e) {
+                if (e.target === this) closeCreateModal();
+            });
+            document.querySelectorAll('#modalDate, #modalWarehouse, #modalClerk, #modalBaoche, #modalZhuangxie').forEach(inp => {
+                inp.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        createSheetFromModal();
+                    }
+                });
+            });
+
+            // 编辑表
+            document.getElementById('editSheetCancel').addEventListener('click', closeEditSheetModal);
+            document.getElementById('editSheetConfirm').addEventListener('click', saveEditSheet);
+            document.getElementById('editSheetModal').addEventListener('click', function(e) {
+                if (e.target === this) closeEditSheetModal();
+            });
+            document.querySelectorAll('#editSheetDate, #editSheetWarehouse, #editSheetClerk, #editSheetBaoche, #editSheetZhuangxie').forEach(inp => {
+                inp.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveEditSheet();
+                    }
+                });
+            });
+
+            // 编辑记录
+            document.getElementById('editRecordCancel').addEventListener('click', closeEditRecordModal);
+            document.getElementById('editRecordConfirm').addEventListener('click', saveEditRecord);
+            document.getElementById('editRecordModal').addEventListener('click', function(e) {
+                if (e.target === this) closeEditRecordModal();
+            });
+            document.querySelectorAll('#editRecordCar, #editRecordType, #editRecordVolume, #editRecordRope, #editRecordTurn, #editRecordCover').forEach(inp => {
+                inp.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveEditRecord();
+                    }
+                });
+            });
+
+            renderAll();
+        }
+
+        window.toggleSheet = toggleSheet;
+        window.deleteSheet = deleteSheet;
+        window.exportSheetImage = exportSheetImage;
+        window.exportSheetCSV = exportSheetCSV;
+        window.deleteRecord = deleteRecord;
+        window.addRecordToSheet = addRecordToSheet;
+        window.openEditSheetModal = openEditSheetModal;
+        window.openEditRecordModal = openEditRecordModal;
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+</body>
+</html>
